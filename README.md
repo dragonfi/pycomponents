@@ -5,8 +5,12 @@ A simple Entity Component System written in Python
 Note that it is highly experimental and completely not fit for production use.
 (Also, probably quite slow, as I took the obvious route when implementing it.)
 
-Inspired by almost every blog on the topic Google can find and [this gist](https://gist.github.com/darkf/5574631).
-Check out [the article on wikipedia](https://en.wikipedia.org/wiki/Entity_component_system) for more info.
+Inspired by the [first few][gdn] [blog posts][tmachine] [and wiki][es-wiki] [entries][wikipedia-article] Google can find on the topic.
+
+[gdn]: http://www.gamedev.net/page/resources/_/technical/game-programming/understanding-component-entity-systems-r3013
+[tmachine]: http://t-machine.org/index.php/2007/09/03/entity-systems-are-the-future-of-mmog-development-part-1/
+[es-wiki]: http://entity-systems.wikidot.com/
+[wikipedia-article]: https://en.wikipedia.org/wiki/Entity_component_system
 
 # Usage
 
