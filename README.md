@@ -5,6 +5,9 @@ A simple Entity Component System written in Python
 Note that it is highly experimental and completely not fit for production use.
 (Also, probably quite slow, as I took the obvious route when implementing it.)
 
+Inspired by almost every blog on the topic Google can find and [this gist](https://gist.github.com/darkf/5574631).
+Check out [the article on wikipedia](https://en.wikipedia.org/wiki/Entity_component_system) for more info.
+
 # Usage
 
 The library is self-contained, so you could install it, or just drop into your project.
