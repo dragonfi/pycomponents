@@ -1,7 +1,7 @@
 import unittest
 import typesafety
 
-from .entity import Entity, Component
+from .entity import Entity, Component, system
 
 Position = Component('position', x=0, y=0)
 Velocity = Component('velocity', x=0, y=0)
@@ -60,3 +60,23 @@ class TestComponent(BaseTestCase):
             return abs(self.high - self.low)
         Interval = Component('interval', low=0, high=0, diff=property(diff))
         self.assertTrue(Interval(low=10, high=15).diff, 5)
+
+
+@system(Position, Velocity, dampening=0.9)
+def physics(entity, world):
+    entity.position.x += entity.velocity.x * world.dt
+    entity.position.y += entity.velocity.y * world.dt
+
+    entity.velocity.x *= physics.dampening
+    entity.velocity.y *= physics.dampening
+
+
+class TestSystem(BaseTestCase):
+    def test_system_can_be_created(self):
+        p = physics()
+        self.assertEquals(p.components, (Position, Velocity))
+        self.assertEquals(p.dampening, 0.9)
+
+    def test_system_can_have_variables(self):
+        p = physics(dampening=0.8)
+        self.assertEquals(p.dampening, 0.8)
