@@ -1,13 +1,19 @@
 class Entity(object):
     next_id = 0
 
-    def __init__(self):
+    def __init__(self, *args):
         self.id = Entity.next_id
-        self.components = set()
         Entity.next_id += 1
 
+        self.components = set()
+        for component in args:
+            self.add(component)
+
     def add(self, component):
-        component.add_to(self)
+        if type(component) == type:
+            component = component()
+        setattr(self, component.__class__.__name__, component)
+        self.components.add(component.__class__)
 
     def remove(self, component_class):
         self.components.remove(component_class)
@@ -16,18 +22,15 @@ class Entity(object):
         return component_class in self.components
 
 
-class Component(object):
-    def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
-
-    def add_to(self, entity):
-        entity.components.add(self.__class__)
-        self.init(entity, *self.args, **self.kwargs)
-
-    def init(self, entity):
-        raise NotImplementedError
+def Component(name, **kwargs):
+    kwargs['__init__'] = Component__init__
+    return type(name, (), dict(**kwargs))
 
 
-class World(object):
-    pass
+def Component__init__(self, **kwargs):
+        for attr, value in kwargs.items():
+            if attr not in self.__class__.__dict__:
+                raise AttributeError("No such attribute in class")
+            setattr(self, attr, value)
+
+

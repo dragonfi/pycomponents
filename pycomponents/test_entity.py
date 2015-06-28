@@ -1,20 +1,10 @@
 import unittest
 import typesafety
 
-from .entity import Entity, Component, World
+from .entity import Entity, Component
 
-Component1 = Component(attribute=True, counter=0)
-Component2 = Component(attribute=True)
-
-class Component1(Component):
-    def init(self, entity):
-        entity.component1_attribute = True
-        entity.component1_counter = 0
-
-
-class Component2(Component):
-    def init(self, entity):
-        entity.c2_attribute = True
+Position = Component('position', x=0, y=0)
+Velocity = Component('velocity', x=0, y=0)
 
 
 class BaseTestCase(unittest.TestCase):
@@ -34,38 +24,39 @@ class TestEntity(BaseTestCase):
         entity2 = Entity()
         self.assertNotEquals(entity1.id, entity2.id)
 
+
+class TestEntityComponent(BaseTestCase):
+    def test_entity_can_be_instantiated_with_multiple_components(self):
+        entity = Entity(Position, Velocity)
+
+        self.assertHasAttr(entity, 'position')
+        self.assertHasAttr(entity, 'velocity')
+        self.assertTrue(entity.has(Position))
+        self.assertTrue(entity.has(Velocity))
+
+    def test_components_can_be_added_after_intantiation(self):
+        entity = Entity()
+        self.assertFalse(entity.has(Position))
+
+        entity.add(Position)
+        self.assertTrue(entity.has(Position))
+
     def test_components_can_be_removed(self):
         entity = Entity()
-        entity.add(Component1())
-        self.assertTrue(entity.has(Component1))
-        entity.remove(Component1)
-        self.assertFalse(entity.has(Component1))
+        entity.add(Position)
+        self.assertTrue(entity.has(Position))
+
+        entity.remove(Position)
+        self.assertFalse(entity.has(Position))
 
 
 class TestComponent(BaseTestCase):
-    def test_components_can_be_added_to_an_entity(self):
-        entity = Entity()
-        entity.add(Component1())
-        self.assertEquals(entity.has(Component1), True)
+    def test_can_only_be_instantiated_with_predefined_attributes(self):
+        with self.assertRaises(AttributeError):
+            p = Position(x=10, y=12, z=10)
 
-    def test_components_add_their_attributes_to_entity(self):
-        entity = Entity()
-        entity.add(Component1())
-        self.assertHasAttr(entity, 'component1_attribute')
-
-    def test_component_add_to_can_also_add_the_component(self):
-        entity = Entity()
-        component1 = Component1()
-        component1.add_to(entity)
-        self.assertEquals(entity.has(Component1), True)
-        self.assertHasAttr(entity, 'component1_attribute')
-
-
-class World(BaseTestCase):
-    def test_world_can_be_instantiated(self):
-        world = World()
-
-    def xtest_entities_can_be_added_to_world(self):
-        world = World()
-        entity = Entity(Component1, Component2)
-        self.assertIn(entity, world.entities)
+    def test_component_can_have_properties(self):
+        def diff(self):
+            return abs(self.high - self.low)
+        Interval = Component('interval', low=0, high=0, diff=property(diff))
+        self.assertTrue(Interval(low=10, high=15).diff, 5)
