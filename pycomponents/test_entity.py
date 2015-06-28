@@ -6,6 +6,7 @@ from . import Entity, Component, System, World
 Position = Component('position', x=0, y=0)
 Velocity = Component('velocity', x=0, y=0)
 
+
 @System([Position, Velocity], dampening=0.9)
 def physics(entity, world):
     entity.position.x += entity.velocity.x * world.dt
@@ -125,7 +126,6 @@ class TestWorld(BaseTestCase):
         self.assertNotIn(entity1, world.entities())
         self.assertIn(entity2, world.entities())
 
-
     def test_can_add_systems(self):
         world = World()
         world.add(physics())
@@ -146,9 +146,8 @@ class TestWorld(BaseTestCase):
         entity = Entity(Position(x=0, y=0), Velocity(x=1, y=1))
         world.add(entity)
 
-        world.update(dt = 1)
+        world.update(dt=1)
         self.assertEquals(entity.position.x, 1)
 
-        world.update(dt = 1)
+        world.update(dt=1)
         self.assertEquals(entity.position.x, 2)
-

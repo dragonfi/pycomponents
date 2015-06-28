@@ -24,11 +24,11 @@ class Entity(object):
 
 def Component(name, **attributes):
     """Returns a new component"""
-    attributes['__init__'] = Component__init__
+    attributes['__init__'] = _Component__init__
     return type(name, (), dict(**attributes))
 
 
-def Component__init__(self, **attributes):
+def _Component__init__(self, **attributes):
         if not set(attributes).issubset(set(self.__class__.__dict__)):
             raise AttributeError("No such attribute in class")
         self.__dict__.update(attributes)
@@ -54,6 +54,7 @@ class World(object):
     def __init__(self):
         self._entities = []
         self._systems = []
+
     def add(self, *objs):
         for obj in objs:
             if isinstance(obj, Entity):
