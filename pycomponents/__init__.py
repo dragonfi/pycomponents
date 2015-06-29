@@ -22,31 +22,34 @@ class Entity(object):
         return set(component_classes).issubset(self.components)
 
 
-def Component(name, **attributes):
-    """Returns a new component"""
-    attributes['__init__'] = _Component__init__
-    return type(name, (), dict(**attributes))
-
-
-def _Component__init__(self, **attributes):
+class _UpdateAttributesOnInit(object):
+    def __init__(self, **attributes):
         if not set(attributes).issubset(set(self.__class__.__dict__)):
             raise AttributeError("No such attribute in class")
         self.__dict__.update(attributes)
 
 
+class _Component(_UpdateAttributesOnInit):
+    pass
+
+
+class _System(_UpdateAttributesOnInit):
+    pass
+
+
+def Component(name, **attributes):
+    """Returns a new component"""
+    return type(name, (_Component, ), dict(**attributes))
+
+
 def System(components, **attributes):
     """A decorator to create a system definition."""
     def system_inner(fn):
-        fn.components = tuple(components)
-        fn.__dict__.update(attributes)
+        attributes['update'] = fn
+        cls = type(fn.__name__, (_System, ), dict(**attributes))
+        cls.components = tuple(components)
+        return cls
 
-        def fn__init__(**inner_attributes):
-            if not set(inner_attributes).issubset(set(attributes)):
-                raise AttributeError("No such attribute on function")
-            fn.__dict__.update(inner_attributes)
-            fn__init__.__dict__.update(fn.__dict__)
-            return fn
-        return fn__init__
     return system_inner
 
 
@@ -59,7 +62,7 @@ class World(object):
         for obj in objs:
             if isinstance(obj, Entity):
                 self.add_entity(obj)
-            elif callable(obj):
+            elif isinstance(obj, _System):
                 self.add_system(obj)
 
     def add_entity(self, entity):
@@ -81,7 +84,7 @@ class World(object):
     def remove(self, obj):
         if isinstance(obj, Entity):
             self.remove_entity(obj)
-        elif callable(obj):
+        elif isinstance(obj, _System):
             self.remove_system(obj)
 
     def remove_entity(self, entity):
@@ -94,4 +97,4 @@ class World(object):
         self.dt = dt
         for system in self.systems():
             for entity in self.entities(has=system.components):
-                system(entity, self)
+                system.update(entity, self)

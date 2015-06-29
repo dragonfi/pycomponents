@@ -8,11 +8,11 @@ Velocity = Component('velocity', x=0, y=0)
 
 
 @System([Position, Velocity], dampening=0.9)
-def physics(entity, world):
+def Physics(self, entity, world):
     entity.position.x += entity.velocity.x * world.dt
     entity.position.y += entity.velocity.y * world.dt
 
-    factor = max(0, (1 - physics.dampening))
+    factor = max(0, (1 - self.dampening))
     entity.velocity.x *= factor
     entity.velocity.y *= factor
 
@@ -86,12 +86,12 @@ class TestComponent(BaseTestCase):
 
 class TestSystem(BaseTestCase):
     def test_system_can_be_created(self):
-        p = physics()
+        p = Physics()
         self.assertEquals(p.components, (Position, Velocity))
         self.assertEquals(p.dampening, 0.9)
 
     def test_system_can_have_tweakable_variables(self):
-        p = physics(dampening=0.8)
+        p = Physics(dampening=0.8)
         self.assertEquals(p.dampening, 0.8)
 
 
@@ -128,12 +128,12 @@ class TestWorld(BaseTestCase):
 
     def test_can_add_systems(self):
         world = World()
-        world.add(physics())
+        world.add(Physics())
         self.assertLen(world.systems(), 1)
 
     def test_can_remove_systems(self):
         world = World()
-        p = physics()
+        p = Physics()
         world.add(p)
         self.assertLen(world.systems(), 1)
         world.remove(p)
@@ -141,7 +141,7 @@ class TestWorld(BaseTestCase):
 
     def test_update_calls_system_on_relevant_elements(self):
         world = World()
-        world.add(physics(dampening=0.0))
+        world.add(Physics(dampening=0.0))
 
         entity = Entity(Position(x=0, y=0), Velocity(x=1, y=1))
         world.add(entity)
