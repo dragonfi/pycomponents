@@ -3,18 +3,30 @@ import typesafety
 
 from . import Entity, Component, System, World
 
-Position = Component('position', x=0, y=0)
-Velocity = Component('velocity', x=0, y=0)
+
+class Position(Component):
+    name = 'position'
+    x = 0
+    y = 0
 
 
-@System([Position, Velocity], dampening=0.9)
-def Physics(self, entity, world):
-    entity.position.x += entity.velocity.x * world.dt
-    entity.position.y += entity.velocity.y * world.dt
+class Velocity(Component):
+    name = 'velocity'
+    x = 0
+    y = 0
 
-    factor = max(0, (1 - self.dampening))
-    entity.velocity.x *= factor
-    entity.velocity.y *= factor
+
+class Physics(System):
+    components = [Position, Velocity]
+    dampening = 0.9
+
+    def update(self, entity, world):
+        entity.position.x += entity.velocity.x * world.dt
+        entity.position.y += entity.velocity.y * world.dt
+
+        factor = max(0, (1 - self.dampening))
+        entity.velocity.x *= factor
+        entity.velocity.y *= factor
 
 
 class BaseTestCase(unittest.TestCase):
@@ -78,21 +90,48 @@ class TestComponent(BaseTestCase):
             p = Position(x=10, y=12, z=10)
 
     def test_component_can_have_properties(self):
-        def diff(self):
-            return abs(self.high - self.low)
-        Interval = Component('interval', low=0, high=0, diff=property(diff))
+        class Interval(Component):
+            name = 'interval'
+            low = 0
+            high = 0
+
+            @property
+            def diff(self):
+                return abs(self.high - self.low)
+
         self.assertTrue(Interval(low=10, high=15).diff, 5)
+
+    def test_default_component_name_is_lowercase_class_name(self):
+        class ExampleComponent(Component):
+            pass
+
+        c = ExampleComponent()
+        self.assertEqual(c.name, 'examplecomponent')
+
+    def test_name_member_is_used_for_class_name_if_present(self):
+        class ExampleComponent(Component):
+            name = 'something_completely_different'
+
+        c = ExampleComponent()
+        self.assertEqual(c.name, 'something_completely_different')
+
+    def test_component_name_must_be_a_valid_identifier(self):
+        class ExampleComponent(Component):
+            name = 'invalid identifier due to space'
+
+        with self.assertRaises(ValueError):
+            c = ExampleComponent()
 
 
 class TestSystem(BaseTestCase):
     def test_system_can_be_created(self):
         p = Physics()
-        self.assertEquals(p.components, (Position, Velocity))
-        self.assertEquals(p.dampening, 0.9)
+        self.assertSequenceEqual(p.components, (Position, Velocity))
+        self.assertEqual(p.dampening, 0.9)
 
     def test_system_can_have_tweakable_variables(self):
         p = Physics(dampening=0.8)
-        self.assertEquals(p.dampening, 0.8)
+        self.assertEqual(p.dampening, 0.8)
 
 
 class TestWorld(BaseTestCase):

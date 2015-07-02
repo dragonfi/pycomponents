@@ -12,7 +12,7 @@ class Entity(object):
     def add(self, component):
         if type(component) == type:
             component = component()
-        setattr(self, component.__class__.__name__, component)
+        setattr(self, component.name, component)
         self.components.add(component.__class__)
 
     def remove(self, component_class):
@@ -29,28 +29,21 @@ class _UpdateAttributesOnInit(object):
         self.__dict__.update(attributes)
 
 
-class _Component(_UpdateAttributesOnInit):
+class Component(_UpdateAttributesOnInit):
+    name = None
+
+    def __init__(self, **attributes):
+        super().__init__(**attributes)
+        if self.name is None:
+            self.name = self.__class__.__name__.lower()
+        if not self.name.isidentifier():
+            msg = "component name must be a valid identifier: '{}'".format(
+                self.name)
+            raise ValueError(msg)
+
+
+class System(_UpdateAttributesOnInit):
     pass
-
-
-class _System(_UpdateAttributesOnInit):
-    pass
-
-
-def Component(name, **attributes):
-    """Returns a new component"""
-    return type(name, (_Component, ), dict(**attributes))
-
-
-def System(components, **attributes):
-    """A decorator to create a system definition."""
-    def system_inner(fn):
-        attributes['update'] = fn
-        cls = type(fn.__name__, (_System, ), dict(**attributes))
-        cls.components = tuple(components)
-        return cls
-
-    return system_inner
 
 
 class World(object):
@@ -62,7 +55,7 @@ class World(object):
         for obj in objs:
             if isinstance(obj, Entity):
                 self.add_entity(obj)
-            elif isinstance(obj, _System):
+            elif isinstance(obj, System):
                 self.add_system(obj)
 
     def add_entity(self, entity):
@@ -84,7 +77,7 @@ class World(object):
     def remove(self, obj):
         if isinstance(obj, Entity):
             self.remove_entity(obj)
-        elif isinstance(obj, _System):
+        elif isinstance(obj, System):
             self.remove_system(obj)
 
     def remove_entity(self, entity):
