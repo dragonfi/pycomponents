@@ -1,7 +1,7 @@
 import unittest
 import typesafety
 
-from . import Entity, Component, System, World
+from .core import Entity, Component, System, World
 
 
 class Position(Component):
