@@ -57,6 +57,8 @@ class World(object):
                 self.add_entity(obj)
             elif isinstance(obj, System):
                 self.add_system(obj)
+            else:
+                raise TypeError("Object must be an Entity or System", obj)
 
     def add_entity(self, entity):
         self._entities.append(entity)
@@ -71,8 +73,8 @@ class World(object):
             components = has
             return list(filter(lambda e: e.has(*components), self._entities))
 
-    def systems(self):
-        return list(self._systems)
+    def systems(self, cls=object):
+        return [s for s in self._systems if isinstance(s, cls)]
 
     def remove(self, obj):
         if isinstance(obj, Entity):

@@ -178,6 +178,12 @@ class TestWorld(BaseTestCase):
         world.remove(p)
         self.assertLen(world.systems(), 0)
 
+    def test_can_select_systems_of_a_certain_type(self):
+        world = World()
+        world.add(Physics(), Physics(), System())
+        self.assertLen(world.systems(), 3)
+        self.assertLen(world.systems(Physics), 2)
+
     def test_update_calls_system_on_relevant_elements(self):
         world = World()
         world.add(Physics(dampening=0.0))
