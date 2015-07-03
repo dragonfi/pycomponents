@@ -1,12 +1,12 @@
 import unittest
 
-
-class MockWindow(object):
-    pass
-
 import sys
 from unittest import mock
 sys.modules['pyglet'] = mock.Mock()
+
+
+class MockWindow(object):
+    clear = mock.Mock()
 
 import pyglet
 pyglet.window.Window = MockWindow
@@ -46,7 +46,6 @@ class TestPygletWrapper(unittest.TestCase):
 
     def test_pyglet_game_on_draw_calls_rendering_systems(self):
         game = PygletGame()
-        game.clear = mock.Mock()
 
         drawer = mock.Mock(RenderingSystem, components=[])
         game.add(drawer)
